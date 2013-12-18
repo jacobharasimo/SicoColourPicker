@@ -7,63 +7,26 @@
     mc:Ignorable="d"
     Width="1170"    
 	 d:DesignWidth="500"  >
-    <UserControl.Resources>
-        <DataTemplate x:Key="HueItem">        	
-        		<Rectangle Fill="{Binding Background}" HorizontalAlignment="Left"  Width="{Binding SwatchWidth}" Height="{Binding SwatchHeight}" Margin="0" StrokeThickness="0" Canvas.Left="0" Canvas.Top="0"/>						        	
-        </DataTemplate>
-        <DataTemplate x:Key="HueColumn">
-            <ItemsControl x:Name="HueListCard">
-                <ItemsControl ItemsSource="{Binding Colours}" ItemTemplate="{StaticResource HueItem}" />
-        	</ItemsControl>        		        	
-        </DataTemplate>
-
-        <DataTemplate x:Key="ColourItem">
-            <Grid Margin="0,0,0,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                <Rectangle Fill="{Binding Background}" HorizontalAlignment="Left" Width="{Binding SwatchWidth}" Height="{Binding SwatchHeight}" Margin="0"/>
-            </Grid>
-        </DataTemplate>
-        <DataTemplate x:Key="ColourColumn">
-            <StackPanel Margin="0,0,15,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                <ItemsControl x:Name="HueListCard">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl ItemsSource="{Binding Colours}" ItemTemplate="{StaticResource ColourItem}" VerticalAlignment="Stretch"/>
-                </ItemsControl>
-            </StackPanel>
-        </DataTemplate>
-    </UserControl.Resources>
+    
 	<Grid x:Name="LayoutRoot">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="124"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
         <Grid x:Name="Hues">
-			<Border BorderThickness="0,0,0,24" BorderBrush="#FFD0D8DD">
-				<Canvas >
-					<ItemsControl x:Name="HuesList" ItemsSource="{Binding HueSwatches, ElementName=userControl}" ItemTemplate="{StaticResource HueColumn}" Height="100">
-						<ItemsControl.ItemsPanel>
-							<ItemsPanelTemplate>
-								<StackPanel Orientation="Horizontal" VerticalAlignment="Stretch"/>
-							</ItemsPanelTemplate>
-						</ItemsControl.ItemsPanel>
-					</ItemsControl>
-					<local:JogDialer x:Name="Jogger"  MouseLeftButtonDown="Handle_MouseDown" MouseMove="Handle_MouseMove" MouseLeftButtonUp="Handle_MouseUp" Cursor="SizeWE" Height="124" Width="100"/>
+            <Border BorderThickness="0,0,0,24" BorderBrush="#FFD0D8DD" Width="{Binding Width, ElementName=userControl}">
+                <Canvas Width="{Binding Width, ElementName=userControl}" Margin="0">										
+                    <Grid Width="{Binding Width, ElementName=userControl}" Height="100" x:Name="PaintCardZone" Margin="0">
+                    </Grid>
+                    <local:JogDialer x:Name="Jogger"  MouseLeftButtonDown="Handle_MouseDown" MouseMove="Handle_MouseMove" MouseLeftButtonUp="Handle_MouseUp" Cursor="SizeWE" Height="124" Width="42"/>
 				</Canvas>
 			</Border>        
 		</Grid>
-        <Grid  Grid.Row="1" Margin="0,15,0,0" Width="{Binding Width, ElementName=userControl}">
-        	<Border HorizontalAlignment="Left" Padding="5" BorderThickness="1" BorderBrush="Black">            
-        		<ItemsControl x:Name="ColourList" ItemsSource="{Binding Colours, ElementName=userControl}" ItemTemplate="{StaticResource ColourColumn}" >
-        			<ItemsControl.ItemsPanel>
-        				<ItemsPanelTemplate>
-        					<StackPanel Orientation="Horizontal" VerticalAlignment="Stretch"/>
-        				</ItemsPanelTemplate>
-        			</ItemsControl.ItemsPanel>
-        		</ItemsControl>
-        	</Border>
-        </Grid>
-	</Grid>
+        <Canvas Grid.Row="2" Margin="0,15,0,0">		
+			<Canvas.Clip>
+				<RectangleGeometry Rect="0,0,1170,1000"/>
+			</Canvas.Clip>	
+        	<Grid x:Name="ColorCardZone"  VerticalAlignment="Top"/>
+        </Canvas>
+    </Grid>
 </UserControl>

@@ -5,7 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
 	x:Class="SicoColourPicker.JogDialer"
-	d:DesignWidth="100" d:DesignHeight="100">
+	d:DesignWidth="42" d:DesignHeight="100">
 
 	<Grid x:Name="LayoutRoot">
 		<Grid.RowDefinitions>
@@ -14,7 +14,7 @@
 		</Grid.RowDefinitions>
 		<Rectangle StrokeThickness="4" Stroke="#FFDA291C" Margin="0,0,0,20" Grid.RowSpan="2"/>
 		<Grid Grid.Row="1" Background="#FFDA291C">
-			<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="&lt;  &gt;" VerticalAlignment="Center" Foreground="White" Margin="10,0,23,0" FontSize="16"/>
+			<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="&#65308; &#xff1e;" VerticalAlignment="Center" Foreground="White" FontSize="14" Margin="4,0,4,0"/>
 		</Grid>
 	</Grid>
 </UserControl>

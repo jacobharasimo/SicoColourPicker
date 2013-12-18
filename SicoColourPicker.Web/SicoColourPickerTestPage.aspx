@@ -58,7 +58,7 @@
 </head>
 <body>
     <form id="form1" runat="server" style="height:100%">
-    <div id="silverlightControlHost" style="margin:auto;max-width:1200px;">
+    <div id="silverlightControlHost" style="margin:auto;max-width:1170px;">
         <object data="data:application/x-silverlight-2," type="application/x-silverlight-2" width="100%" height="100%">
 		  <param name="source" value="ClientBin/SicoColourPicker.xap"/>
 		  <param name="onError" value="onSilverlightError" />

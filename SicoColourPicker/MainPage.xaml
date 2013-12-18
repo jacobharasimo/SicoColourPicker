@@ -1,0 +1,69 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sdk="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk" xmlns:local="clr-namespace:SicoColourPicker" x:Name="userControl" x:Class="SicoColourPicker.MainPage"
+    mc:Ignorable="d"
+    Width="1170"    
+	 d:DesignWidth="500"  >
+    <UserControl.Resources>
+        <DataTemplate x:Key="HueItem">        	
+        		<Rectangle Fill="{Binding Background}" HorizontalAlignment="Left"  Width="{Binding SwatchWidth}" Height="{Binding SwatchHeight}" Margin="0" StrokeThickness="0" Canvas.Left="0" Canvas.Top="0"/>						        	
+        </DataTemplate>
+        <DataTemplate x:Key="HueColumn">
+            <ItemsControl x:Name="HueListCard">
+                <ItemsControl ItemsSource="{Binding Colours}" ItemTemplate="{StaticResource HueItem}" />
+        	</ItemsControl>        		        	
+        </DataTemplate>
+
+        <DataTemplate x:Key="ColourItem">
+            <Grid Margin="0,0,0,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Rectangle Fill="{Binding Background}" HorizontalAlignment="Left" Width="{Binding SwatchWidth}" Height="{Binding SwatchHeight}" Margin="0"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="ColourColumn">
+            <StackPanel Margin="0,0,15,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <ItemsControl x:Name="HueListCard">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl ItemsSource="{Binding Colours}" ItemTemplate="{StaticResource ColourItem}" VerticalAlignment="Stretch"/>
+                </ItemsControl>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+	<Grid x:Name="LayoutRoot">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="124"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+        <Grid x:Name="Hues">
+			<Border BorderThickness="0,0,0,24" BorderBrush="#FFD0D8DD">
+				<Canvas >
+					<ItemsControl x:Name="HuesList" ItemsSource="{Binding HueSwatches, ElementName=userControl}" ItemTemplate="{StaticResource HueColumn}" Height="100">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Horizontal" VerticalAlignment="Stretch"/>
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+					</ItemsControl>
+					<local:JogDialer x:Name="Jogger"  MouseLeftButtonDown="Handle_MouseDown" MouseMove="Handle_MouseMove" MouseLeftButtonUp="Handle_MouseUp" Cursor="SizeWE" Height="124" Width="100"/>
+				</Canvas>
+			</Border>        
+		</Grid>
+        <Grid  Grid.Row="1" Margin="0,15,0,0" Width="{Binding Width, ElementName=userControl}">
+        	<Border HorizontalAlignment="Left" Padding="5" BorderThickness="1" BorderBrush="Black">            
+        		<ItemsControl x:Name="ColourList" ItemsSource="{Binding Colours, ElementName=userControl}" ItemTemplate="{StaticResource ColourColumn}" >
+        			<ItemsControl.ItemsPanel>
+        				<ItemsPanelTemplate>
+        					<StackPanel Orientation="Horizontal" VerticalAlignment="Stretch"/>
+        				</ItemsPanelTemplate>
+        			</ItemsControl.ItemsPanel>
+        		</ItemsControl>
+        	</Border>
+        </Grid>
+	</Grid>
+</UserControl>

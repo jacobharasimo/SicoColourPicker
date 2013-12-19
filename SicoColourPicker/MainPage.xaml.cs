@@ -12,6 +12,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Newtonsoft.Json;
 using System.ComponentModel;
+using System.Windows.Media.Effects;
 
 namespace SicoColourPicker
 {
@@ -132,7 +133,8 @@ namespace SicoColourPicker
         private void setJoggerSize(FrameworkElement sample) {
             trace(sample.ActualWidth);
         }
-        public void createColorCardRow(ColourList cl) {
+        public void createColorCardRow(ColourList cl)
+        {
             var borderRadiusAmount = 5;
             //Create the container            
             var colorCard = new Grid();
@@ -140,49 +142,51 @@ namespace SicoColourPicker
             //create the swatches
             foreach (var swatch in cl.Colours)
             {
-
+                var shadowColor = ToColorFromHex("#494949");
                 var fontColor = new SolidColorBrush(Colors.White);
-                var dropShadowColor = "#494949";
-                if (swatch.Font.ToLower() == "dark-font") {
-                    dropShadowColor = "White";
+                if (swatch.Font.ToLower() == "dark-font")
+                {
+                    shadowColor = ToColorFromHex("#ffffff");
                     fontColor = new SolidColorBrush(ToColorFromHex("#494949"));
                 }
                 var rowIndex = cl.Colours.IndexOf(swatch);
                 colorCard.RowDefinitions.Add(new RowDefinition());
-                var instance = new ColourSwatch();
-                instance.Name = swatch.Id.ToString(); ;
-                instance.FontColor = fontColor;
-                instance.DropShadowColor = dropShadowColor;
-                instance.SwatchColor = new SolidColorBrush(ToColorFromHex(swatch.Background));
-                instance.ColorNameString = swatch.Name;
-                instance.ColorCodeString = swatch.DisplayCode;
-                instance.MouseLeftButtonUp += instance_MouseLeftButtonUp;
+                var border = new Border();
+
+                border.MouseLeftButtonUp += delegate { swatch_Click(swatch); };
+                border.Background = new SolidColorBrush(ToColorFromHex(swatch.Background));
+                var cardData = new StackPanel();
+                cardData.Children.Add(new TextBlock() { Text = swatch.DisplayCode, Margin = new Thickness(5, 5, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect() { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
+                cardData.Children.Add(new TextBlock() { Text = swatch.Name, Margin = new Thickness(5, 0, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect() { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
                 var cardMargin = new Thickness(0, 0, 0, 5);
-                if (rowIndex + 1 == 1) {
-                    instance.CornerRadius = new CornerRadius(borderRadiusAmount, borderRadiusAmount, 0, 0);
+                if (rowIndex + 1 == 1)
+                {
+                    border.CornerRadius = new CornerRadius(borderRadiusAmount, borderRadiusAmount, 0, 0);
                 }
-                else if (rowIndex + 1 == cl.Colours.Count) {
+                else if (rowIndex + 1 == cl.Colours.Count)
+                {
                     cardMargin = new Thickness(0);
-                    instance.CornerRadius = new CornerRadius(0, 0, borderRadiusAmount, borderRadiusAmount);
+                    border.CornerRadius = new CornerRadius(0, 0, borderRadiusAmount, borderRadiusAmount);
                 }
-                if (cl.Colours.Count==1) {
-                    instance.CornerRadius = new CornerRadius(borderRadiusAmount);
+                if (cl.Colours.Count == 1)
+                {
+                    border.CornerRadius = new CornerRadius(borderRadiusAmount);
                 }
-                instance.CardMargin = cardMargin;
-                colorCard.Children.Add(instance);
-                Grid.SetRow(instance, rowIndex);
+                border.Child = cardData;
+                border.Margin = cardMargin;
+                colorCard.Children.Add(border);
+                Grid.SetRow(border, rowIndex);
             }
             ColorCardZone.ColumnDefinitions.Add(new ColumnDefinition() { });
             var newColumnIndex = ColorCardZone.ColumnDefinitions.Count - 1;
             ColorCardZone.Children.Add(colorCard);
             Grid.SetColumn(colorCard, newColumnIndex);
-            ColorCards.Add(colorCard as FrameworkElement);
         }
 
-        void instance_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        void swatch_Click(object sender)
         {
-            var item = sender as ColourSwatch;
-            trace("clicked: "+item.ColorCodeString);
+            var item = sender as SicoColour;
+            trace("clicked a Color: " + item.ColorCode);
         }
 		public void createHueRow(ColourList cl){
             //Create the container

@@ -20,15 +20,15 @@ namespace SicoColourPicker
     {
         private ObservableCollection<FrameworkElement> HueCards = new ObservableCollection<FrameworkElement>();
         private ObservableCollection<FrameworkElement> ColorCards = new ObservableCollection<FrameworkElement>();
-        bool isMouseCaptured;
-        double mouseVerticalPosition;
-        double mouseHorizontalPosition;
+        private bool isMouseCaptured;        
+        private double _mouseHorizontalPosition;
         private bool _isExtra = false;
         private double _ColorZoneWidth;
         private double _ColorZoneHeight;        
         private ObservableCollection<ColourList> _hueSwatches = new ObservableCollection<ColourList>();        
         private ObservableCollection<ColourList> _colours = new ObservableCollection<ColourList>();
-        
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public bool IsExtra
         {
             get
@@ -103,14 +103,13 @@ namespace SicoColourPicker
             PaintCardZone.LayoutUpdated+=PaintCardZone_LayoutUpdated;
         }
 
-        private void PaintCardZone_LayoutUpdated(object sender, EventArgs e)
+        public void PaintCardZone_LayoutUpdated(object sender, EventArgs e)
         {
             if (HueCards.Count > 0) {                
                 Jogger.Width = HueCards[0].ActualWidth * 6.5;
             }            
-        }       
-        
-        void wc_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        }
+        public void wc_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             if (e.Error != null) {
                 var webex = (WebException)e.Error;
@@ -129,8 +128,7 @@ namespace SicoColourPicker
             Colours = JsonConvert.DeserializeObject<WebResponse>(e.Result).Results;
             
         }
-
-        private void setJoggerSize(FrameworkElement sample) {
+        public void setJoggerSize(FrameworkElement sample){
             trace(sample.ActualWidth);
         }
         public void createColorCardRow(ColourList cl)
@@ -182,8 +180,7 @@ namespace SicoColourPicker
             ColorCardZone.Children.Add(colorCard);
             Grid.SetColumn(colorCard, newColumnIndex);
         }
-
-        void swatch_Click(object sender)
+        public void swatch_Click(object sender)
         {
             var item = sender as SicoColour;
             trace("clicked a Color: " + item.ColorCode);
@@ -212,8 +209,8 @@ namespace SicoColourPicker
         public void Handle_MouseDown(object sender, MouseEventArgs args)
         {
             var item = sender as JogDialer;
-            mouseVerticalPosition = args.GetPosition(null).Y;
-            mouseHorizontalPosition = args.GetPosition(null).X;
+
+            _mouseHorizontalPosition = args.GetPosition(null).X;
             isMouseCaptured = true;
             item.CaptureMouse();
         }
@@ -222,8 +219,8 @@ namespace SicoColourPicker
             if (isMouseCaptured)
             {
                 var item = sender as JogDialer;
-                var parent = item.Parent as Canvas;                
-                double deltaH = args.GetPosition(null).X - mouseHorizontalPosition;
+                var parent = item.Parent as Canvas;
+                double deltaH = args.GetPosition(null).X - _mouseHorizontalPosition;
                 double newLeft = deltaH + (double)item.GetValue(Canvas.LeftProperty);                                                
                 var offset = (Jogger.ActualWidth);
                 var percentMoved = ((double)item.GetValue(Canvas.LeftProperty)) / (parent.ActualWidth - offset);
@@ -242,7 +239,7 @@ namespace SicoColourPicker
                 //move the card list (reverse direction)
                 ColorCardZone.SetValue(Canvas.LeftProperty, colorCardsPosition);
                 // Update position global variables.
-                mouseHorizontalPosition = args.GetPosition(null).X;
+                _mouseHorizontalPosition = args.GetPosition(null).X;
             }
         }
         public void Handle_MouseUp(object sender, MouseEventArgs args)
@@ -250,68 +247,65 @@ namespace SicoColourPicker
             var item = sender as JogDialer;
             isMouseCaptured = false;
             item.ReleaseMouseCapture();
-            mouseVerticalPosition = -1;
-            mouseHorizontalPosition = -1;
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
+
+            _mouseHorizontalPosition = -1;
+        }        
         public void NotifyPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
-        }        
-        private void trace(object output){
+        }
+        public void trace(object output){
             System.Diagnostics.Debug.WriteLine(output.ToString());
         }
 
         public static Color ToColorFromHex ( string hex )
-{
-    if(string.IsNullOrEmpty(hex))
-    {
-        throw new ArgumentNullException("hex");
-    }
+        {
+            if(string.IsNullOrEmpty(hex))
+            {
+                throw new ArgumentNullException("hex");
+            }
 
-    // remove any "#" characters
-    while(hex.StartsWith("#"))
-    {
-        hex = hex.Substring(1);
-    }
+            // remove any "#" characters
+            while(hex.StartsWith("#"))
+            {
+                hex = hex.Substring(1);
+            }
 
-    int num = 0;
-    // get the number out of the string 
-    if(!Int32.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out num))
-    {
-        throw new ArgumentException("Color not in a recognized Hex format.");
-    }
-
-    int[] pieces = new int[4];
-    if(hex.Length > 7)
-    {
-        pieces[0] = ((num >> 24) & 0x000000ff);
-        pieces[1] = ((num >> 16) & 0x000000ff);
-        pieces[2] = ((num >> 8) & 0x000000ff);
-        pieces[3] = (num & 0x000000ff);
-    }
-    else if(hex.Length > 5)
-    {
-        pieces[0] = 255;
-        pieces[1] = ((num >> 16) & 0x000000ff);
-        pieces[2] = ((num >> 8) & 0x000000ff);
-        pieces[3] = (num & 0x000000ff);
-    }
-    else if(hex.Length == 3)
-    {
-        pieces[0] = 255;
-        pieces[1] = ((num >> 8) & 0x0000000f);
-        pieces[1] += pieces[1] * 16;
-        pieces[2] = ((num >> 4) & 0x000000f);
-        pieces[2] += pieces[2] * 16;
-        pieces[3] = (num & 0x000000f);
-        pieces[3] += pieces[3] * 16;
-    }
-    return Color.FromArgb((byte) pieces[0], (byte) pieces[1], (byte) pieces[2], (byte) pieces[3]);
-}
-        
+            int num = 0;
+            // get the number out of the string 
+            if(!Int32.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out num))
+            {
+                throw new ArgumentException("Color not in a recognized Hex format.");
+            }
+            int[] pieces = new int[4];
+            if(hex.Length > 7)
+            {
+                pieces[0] = ((num >> 24) & 0x000000ff);
+                pieces[1] = ((num >> 16) & 0x000000ff);
+                pieces[2] = ((num >> 8) & 0x000000ff);
+                pieces[3] = (num & 0x000000ff);
+            }
+            else if(hex.Length > 5)
+            {
+                pieces[0] = 255;
+                pieces[1] = ((num >> 16) & 0x000000ff);
+                pieces[2] = ((num >> 8) & 0x000000ff);
+                pieces[3] = (num & 0x000000ff);
+            }
+            else if(hex.Length == 3)
+            {
+                pieces[0] = 255;
+                pieces[1] = ((num >> 8) & 0x0000000f);
+                pieces[1] += pieces[1] * 16;
+                pieces[2] = ((num >> 4) & 0x000000f);
+                pieces[2] += pieces[2] * 16;
+                pieces[3] = (num & 0x000000f);
+                pieces[3] += pieces[3] * 16;
+            }
+            return Color.FromArgb((byte) pieces[0], (byte) pieces[1], (byte) pieces[2], (byte) pieces[3]);
+        }        
     }
 }

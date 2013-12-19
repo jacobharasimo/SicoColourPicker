@@ -17,7 +17,8 @@ namespace SicoColourPicker
 {
     public partial class MainPage : UserControl
     {
-        double swatchWidth;
+        private ObservableCollection<FrameworkElement> HueCards = new ObservableCollection<FrameworkElement>();
+        private ObservableCollection<FrameworkElement> ColorCards = new ObservableCollection<FrameworkElement>();
         bool isMouseCaptured;
         double mouseVerticalPosition;
         double mouseHorizontalPosition;
@@ -26,7 +27,7 @@ namespace SicoColourPicker
         private double _ColorZoneHeight;        
         private ObservableCollection<ColourList> _hueSwatches = new ObservableCollection<ColourList>();        
         private ObservableCollection<ColourList> _colours = new ObservableCollection<ColourList>();
-
+        
         public bool IsExtra
         {
             get
@@ -72,7 +73,7 @@ namespace SicoColourPicker
                 {                    
                     _hueSwatches.Add(item);
 					createHueRow(item);
-                }
+                }                
             }
         }
         public ObservableCollection<ColourList> Colours
@@ -97,8 +98,17 @@ namespace SicoColourPicker
             InitializeComponent();
             var wc = new WebClient();
             wc.DownloadStringCompleted += wc_DownloadStringCompleted;
-            wc.DownloadStringAsync(new Uri("http://jharasimo.ecentricarts.com/SicoApi/SicoColours/?hue=red"));
-        }        
+            wc.DownloadStringAsync(new Uri("http://jharasimo.ecentricarts.com/SicoApi/SicoColours/withExtra=false"));            
+            PaintCardZone.LayoutUpdated+=PaintCardZone_LayoutUpdated;
+        }
+
+        private void PaintCardZone_LayoutUpdated(object sender, EventArgs e)
+        {
+            if (HueCards.Count > 0) {                
+                Jogger.Width = HueCards[0].ActualWidth * 6.5;
+            }            
+        }       
+        
         void wc_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             if (e.Error != null) {
@@ -113,13 +123,15 @@ namespace SicoColourPicker
                 ColorCardZone.Height = (68+5)*8;
             }
             var count = JsonConvert.DeserializeObject<WebResponse>(e.Result).Results.Count;
-            ColorCardZone.Width = (count) * (166 + 15);
-            trace(string.Format("total width is: {0} for #{1} cards", ColorCardZone.Width, count));
-            
+            ColorCardZone.Width = (count) * (166 + 15);            
             HueSwatches = JsonConvert.DeserializeObject<WebResponse>(e.Result).Results;
-            Colours = JsonConvert.DeserializeObject<WebResponse>(e.Result).Results;           
+            Colours = JsonConvert.DeserializeObject<WebResponse>(e.Result).Results;
+            
         }
 
+        private void setJoggerSize(FrameworkElement sample) {
+            trace(sample.ActualWidth);
+        }
         public void createColorCardRow(ColourList cl) {
             var borderRadiusAmount = 5;
             //Create the container            
@@ -128,34 +140,49 @@ namespace SicoColourPicker
             //create the swatches
             foreach (var swatch in cl.Colours)
             {
+
+                var fontColor = new SolidColorBrush(Colors.White);
+                var dropShadowColor = "#494949";
+                if (swatch.Font.ToLower() == "dark-font") {
+                    dropShadowColor = "White";
+                    fontColor = new SolidColorBrush(ToColorFromHex("#494949"));
+                }
                 var rowIndex = cl.Colours.IndexOf(swatch);
                 colorCard.RowDefinitions.Add(new RowDefinition());
-                var border = new Border();                                
-                border.Background = new SolidColorBrush(ToColorFromHex(swatch.Background));                
-                var colorBlock = new Rectangle();
-                colorBlock.Fill = new SolidColorBrush(Colors.Transparent);                
+                var instance = new ColourSwatch();
+                instance.Name = swatch.Id.ToString(); ;
+                instance.FontColor = fontColor;
+                instance.DropShadowColor = dropShadowColor;
+                instance.SwatchColor = new SolidColorBrush(ToColorFromHex(swatch.Background));
+                instance.ColorNameString = swatch.Name;
+                instance.ColorCodeString = swatch.DisplayCode;
+                instance.MouseLeftButtonUp += instance_MouseLeftButtonUp;
                 var cardMargin = new Thickness(0, 0, 0, 5);
                 if (rowIndex + 1 == 1) {
-                    border.CornerRadius = new CornerRadius(borderRadiusAmount, borderRadiusAmount, 0, 0);
+                    instance.CornerRadius = new CornerRadius(borderRadiusAmount, borderRadiusAmount, 0, 0);
                 }
                 else if (rowIndex + 1 == cl.Colours.Count) {
                     cardMargin = new Thickness(0);
-                    border.CornerRadius = new CornerRadius(0, 0, borderRadiusAmount, borderRadiusAmount);
+                    instance.CornerRadius = new CornerRadius(0, 0, borderRadiusAmount, borderRadiusAmount);
                 }
                 if (cl.Colours.Count==1) {
-                    border.CornerRadius = new CornerRadius(borderRadiusAmount);
+                    instance.CornerRadius = new CornerRadius(borderRadiusAmount);
                 }
-
-
-                border.Margin = cardMargin;
-                border.Child = colorBlock;
-                colorCard.Children.Add(border);
-                Grid.SetRow(border, rowIndex);
+                instance.CardMargin = cardMargin;
+                colorCard.Children.Add(instance);
+                Grid.SetRow(instance, rowIndex);
             }
             ColorCardZone.ColumnDefinitions.Add(new ColumnDefinition() { });
             var newColumnIndex = ColorCardZone.ColumnDefinitions.Count - 1;
             ColorCardZone.Children.Add(colorCard);
             Grid.SetColumn(colorCard, newColumnIndex);
+            ColorCards.Add(colorCard as FrameworkElement);
+        }
+
+        void instance_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var item = sender as ColourSwatch;
+            trace("clicked: "+item.ColorCodeString);
         }
 		public void createHueRow(ColourList cl){
             //Create the container
@@ -170,13 +197,14 @@ namespace SicoColourPicker
                 colorBlock.Stroke = new SolidColorBrush(ToColorFromHex(swatch.Background));
                 colorCard.Children.Add(colorBlock);
                 Grid.SetRow(colorBlock, rowIndex);                                
-            }
+            }            
             PaintCardZone.ColumnDefinitions.Add(new ColumnDefinition() { });
             var newColumnIndex = PaintCardZone.ColumnDefinitions.Count - 1;
             PaintCardZone.Children.Add(colorCard);
-            Grid.SetColumn(colorCard, newColumnIndex);
+            HueCards.Add(colorCard);
+            
+            Grid.SetColumn(colorCard, newColumnIndex);            
 		}
-		
         public void Handle_MouseDown(object sender, MouseEventArgs args)
         {
             var item = sender as JogDialer;
@@ -192,21 +220,23 @@ namespace SicoColourPicker
                 var item = sender as JogDialer;
                 var parent = item.Parent as Canvas;                
                 double deltaH = args.GetPosition(null).X - mouseHorizontalPosition;
-                double newLeft = deltaH + (double)item.GetValue(Canvas.LeftProperty);                                
-                var rightPos = (double)item.GetValue(Canvas.LeftProperty);
-                var offset = (item.ActualWidth/2)-6;                
-                
-                var percentMoved = Math.Max(0, Math.Min(1,newLeft / (parent.ActualWidth - offset)));
+                double newLeft = deltaH + (double)item.GetValue(Canvas.LeftProperty);                                                
+                var offset = (Jogger.ActualWidth);
+                var percentMoved = ((double)item.GetValue(Canvas.LeftProperty)) / (parent.ActualWidth - offset);
+
+                trace("percent moved:" + percentMoved);                
                 var maxRight = parent.ActualWidth - item.ActualWidth;
-                var colorCardsPosition = (ColorCardZone.ActualWidth * percentMoved) * -1;
+                var colorCardsPosition = ((ColorCardZone.ActualWidth-parent.Width) * percentMoved) * -1;
+
                 // Calculate the current position of the object.                                
                 
                 //inforce left limit
-                newLeft = Math.Max(Canvas.GetLeft(parent),Math.Min(newLeft, maxRight));                
-                trace("Percent Moved: " + percentMoved);                      
+                newLeft = Math.Max(Canvas.GetLeft(parent),Math.Min(newLeft, maxRight));
+                
+                //trace(string.Format("Moved: {0}% | Jogger Left: {1} | Colour Ribbon Left: {2} | Colour Ribbon Width: {3}",percentMoved,newLeft,colorCardsPosition, ColorCardZone.ActualWidth));
                 item.SetValue(Canvas.LeftProperty, newLeft);                
                 //move the card list (reverse direction)
-                ColorCardZone.SetValue(Canvas.LeftProperty, (colorCardsPosition));
+                ColorCardZone.SetValue(Canvas.LeftProperty, colorCardsPosition);
                 // Update position global variables.
                 mouseHorizontalPosition = args.GetPosition(null).X;
             }
@@ -278,5 +308,6 @@ namespace SicoColourPicker
     }
     return Color.FromArgb((byte) pieces[0], (byte) pieces[1], (byte) pieces[2], (byte) pieces[3]);
 }
+        
     }
 }

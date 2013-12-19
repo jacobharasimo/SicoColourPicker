@@ -91,6 +91,9 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="ColourList.cs" />
+    <Compile Include="ColourSwatch.xaml.cs">
+      <DependentUpon>ColourSwatch.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CustomClass.cs" />
     <Compile Include="JogDialer.xaml.cs">
       <DependentUpon>JogDialer.xaml</DependentUpon>
@@ -107,6 +110,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="ColourSwatch.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="JogDialer.xaml">
       <Generator>MSBuild:MarkupCompilePass1</Generator>
       <SubType>Designer</SubType>

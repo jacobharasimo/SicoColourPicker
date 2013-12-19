@@ -14,7 +14,9 @@
 		</Grid.RowDefinitions>
 		<Rectangle StrokeThickness="4" Stroke="#FFDA291C" Margin="0,0,0,20" Grid.RowSpan="2"/>
 		<Grid Grid.Row="1" Background="#FFDA291C">
-			<TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="&#65308; &#xff1e;" VerticalAlignment="Center" Foreground="White" FontSize="14" Margin="4,0,4,0"/>
+			<Viewbox HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4,0,4,0">
+				<TextBlock TextWrapping="Wrap" Text="&lt; &gt;" Foreground="White" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+			</Viewbox>
 		</Grid>
 	</Grid>
 </UserControl>

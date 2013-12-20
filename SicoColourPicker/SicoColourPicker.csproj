@@ -121,6 +121,7 @@
     <Compile Include="BooleanToVisibilityConverter.cs" />
     <Compile Include="ColourList.cs" />
     <Compile Include="CustomClass.cs" />
+    <Compile Include="InvertedBooleanToVisibilityConverter.cs" />
     <Compile Include="JogDialer.xaml.cs">
       <DependentUpon>JogDialer.xaml</DependentUpon>
     </Compile>

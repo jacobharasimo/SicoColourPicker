@@ -13,6 +13,7 @@ namespace SicoColourPicker
         private bool _isExtra;
         private string _name;
         private double _swatchHeight;
+        private double _swatchWidth;
         public double SwatchHeight
         {
             get
@@ -21,13 +22,12 @@ namespace SicoColourPicker
             }
             set
             {
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (value == _swatchHeight) return;
                 _swatchHeight = value;
                 NotifyPropertyChanged("SwatchHeight");
             }
-        }
-
-        private double _swatchWidth;
+        }        
         public double SwatchWidth
         {
             get
@@ -36,12 +36,12 @@ namespace SicoColourPicker
             }
             set
             {
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (value == _swatchWidth) return;
                 _swatchWidth = value;
                 NotifyPropertyChanged("SwatchWidth");
             }
-        }
-        
+        }        
         public string Background
         {
             get
@@ -148,6 +148,5 @@ namespace SicoColourPicker
                 NotifyPropertyChanged("Name");
             }
         }
-        
     }
 }

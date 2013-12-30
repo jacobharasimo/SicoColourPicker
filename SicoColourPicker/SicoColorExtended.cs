@@ -1,43 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
+﻿using System.Collections.Generic;
 
 
 namespace SicoColourPicker
 {
     public class SicoColorExtended : SicoColour
     {
-        private string _PositionInDisplay;
-        private string _PrevColorCode;
-        private string _NextColorCode;
-        private string _RecommendedPrimer;
-        private string _PrimerSymbol;
-        private string _PrimerNote;
-        private string _IsExtraNote;
-        private bool _RequiresAdditionalCoat;
-        private string _RequiresAddtionalCoatNote;
-        private bool _IsAvailableOnlyInGallon;
-        private string _IsAvailableOnlyInGallonNote;
-        private List<SicoColour> _ComplementaryColours = new List<SicoColour>();
-        private List<SicoColour> _TriadColours = new List<SicoColour>();
-        private List<SicoColour> _ShadesColours = new List<SicoColour>();
-        private List<ColourCategoryPage> _CategoryPages = new List<ColourCategoryPage>();
-
+        private string _positionInDisplay;
+        private string _prevColorCode;
+        private string _nextColorCode;
+        private string _recommendedPrimer;
+        private string _primerSymbol;
+        private string _primerNote;
+        private string _isExtraNote;
+        private bool _requiresAdditionalCoat;
+        private string _requiresAddtionalCoatNote;
+        private bool _isAvailableOnlyInGallon;
+        private string _isAvailableOnlyInGallonNote;
+        private List<SicoColour> _complementaryColours = new List<SicoColour>();
+        private List<SicoColour> _triadColours = new List<SicoColour>();
+        private List<SicoColour> _shadesColours = new List<SicoColour>();
+        private List<ColourCategoryPage> _categoryPages = new List<ColourCategoryPage>();
         public string PositionInDisplay 
         {
             get { 
-                return _PositionInDisplay; 
+                return _positionInDisplay; 
             }
             set {
-                _PositionInDisplay = value;
+                _positionInDisplay = value;
                 NotifyPropertyChanged("PositionInDisplay");
             } 
         } // e.g. "A37", position of chip in store display
@@ -45,11 +34,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _PrevColorCode;
+                return _prevColorCode;
             }
             set
             {
-                _PrevColorCode = value;
+                _prevColorCode = value;
                 NotifyPropertyChanged("PrevColorCode");
             }
         } // link to prev Chip in palette
@@ -57,11 +46,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _NextColorCode;
+                return _nextColorCode;
             }
             set
             {
-                _NextColorCode = value;
+                _nextColorCode = value;
                 NotifyPropertyChanged("NextColorCode");
             }
         } // link to next Chip in palette
@@ -69,11 +58,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _RecommendedPrimer;
+                return _recommendedPrimer;
             }
             set
             {
-                _RecommendedPrimer = value;
+                _recommendedPrimer = value;
                 NotifyPropertyChanged("RecommendedPrimer");
             }
         } // AE, AT or empty
@@ -81,11 +70,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _PrimerSymbol;
+                return _primerSymbol;
             }
             set
             {
-                _PrimerSymbol = value;
+                _primerSymbol = value;
                 NotifyPropertyChanged("PrimerSymbol");
             }
         } // solid triangle, outlined triangle or empty
@@ -93,11 +82,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _PrimerNote;
+                return _primerNote;
             }
             set
             {
-                _PrimerNote = value;
+                _primerNote = value;
                 NotifyPropertyChanged("PrimerNote");
             }
         } // word version from UI Culture string, e.g. "This colour requires a base coat of Goprime all-in-one Alkyd Emulsion"
@@ -105,11 +94,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _IsExtraNote;
+                return _isExtraNote;
             }
             set
             {
-                _IsExtraNote = value;
+                _isExtraNote = value;
                 NotifyPropertyChanged("IsExtraNote");
             }
         } // e.g. "Attention: this colour is available in stores, but not as a Colour Chip"
@@ -117,11 +106,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _RequiresAdditionalCoat;
+                return _requiresAdditionalCoat;
             }
             set
             {
-                _RequiresAdditionalCoat = value;
+                _requiresAdditionalCoat = value;
                 NotifyPropertyChanged("RequiresAdditionalCoat");
             }
         }
@@ -129,11 +118,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _RequiresAddtionalCoatNote;
+                return _requiresAddtionalCoatNote;
             }
             set
             {
-                _RequiresAddtionalCoatNote = value;
+                _requiresAddtionalCoatNote = value;
                 NotifyPropertyChanged("RequiresAddtionalCoatNote");
             }
         } // e.g. "This colour may require additional coat(s)"
@@ -141,11 +130,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _IsAvailableOnlyInGallon;
+                return _isAvailableOnlyInGallon;
             }
             set
             {
-                _IsAvailableOnlyInGallon = value;
+                _isAvailableOnlyInGallon = value;
                 NotifyPropertyChanged("IsAvailableOnlyInGallon");
             }
         }
@@ -153,11 +142,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _IsAvailableOnlyInGallonNote;
+                return _isAvailableOnlyInGallonNote;
             }
             set
             {
-                _IsAvailableOnlyInGallonNote = value;
+                _isAvailableOnlyInGallonNote = value;
                 NotifyPropertyChanged("IsAvailableOnlyInGallonNote");
             }
         } // e.g. "This colour is available in 3.78L size only"
@@ -165,11 +154,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _ComplementaryColours;
+                return _complementaryColours;
             }
             set
             {
-                _ComplementaryColours = value;
+                _complementaryColours = value;
                 NotifyPropertyChanged("ComplementaryColours");
             }
         } // aka Duo colour; expect one ColorCode value but use List for uniformity
@@ -177,11 +166,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _TriadColours;
+                return _triadColours;
             }
             set
             {
-                _TriadColours = value;
+                _triadColours = value;
                 NotifyPropertyChanged("TriadColours");
             }
         } // expect 2 ColorCode values
@@ -189,11 +178,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _ShadesColours;
+                return _shadesColours;
             }
             set
             {
-                _ShadesColours = value;
+                _shadesColours = value;
                 NotifyPropertyChanged("ShadesColours");
             }
         } // expect 2 ColorCode values
@@ -201,14 +190,14 @@ namespace SicoColourPicker
         {
             get
             {
-                return _CategoryPages;
+                return _categoryPages;
             }
             set
             {
-                _CategoryPages = value;
+                _categoryPages = value;
                 NotifyPropertyChanged("CategoryPages");
             }
         } // e.g. page info for related Colour by Hue, Inspiration by Room
-		public SicoColorExtended() : base(){}		
+		//public SicoColorExtended() : base(){}		
     }
 }

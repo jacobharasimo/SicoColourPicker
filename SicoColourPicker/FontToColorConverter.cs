@@ -1,15 +1,7 @@
 ﻿using System;
 using System.Globalization;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 namespace SicoColourPicker
 {
@@ -17,8 +9,12 @@ namespace SicoColourPicker
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            string text = value as string;
-            SolidColorBrush output = new SolidColorBrush(Colors.White);
+            var text = value as string;
+            var output = new SolidColorBrush(Colors.White);
+            if (text == null)
+            {
+                throw new Exception("Value is null");
+            }
             if (text.Equals("dark-font"))
             {
                 output = new SolidColorBrush(ToColorFromHex("#494949"));
@@ -29,7 +25,11 @@ namespace SicoColourPicker
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var output = "dark-font";
-            SolidColorBrush sample = value as SolidColorBrush;
+            var sample = value as SolidColorBrush;
+            if (sample == null)
+            {
+                throw new Exception("Value is null");
+            }
             if (sample.Color == Colors.White) {
                 output = "light-font";
             }
@@ -50,13 +50,13 @@ namespace SicoColourPicker
                 hex = hex.Substring(1);
             }
 
-            int num = 0;
+            int num;
             // get the number out of the string 
-            if (!Int32.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out num))
+            if (!Int32.TryParse(hex, NumberStyles.HexNumber, null, out num))
             {
                 throw new ArgumentException("Color not in a recognized Hex format.");
             }
-            int[] pieces = new int[4];
+            var pieces = new int[4];
             if (hex.Length > 7)
             {
                 pieces[0] = ((num >> 24) & 0x000000ff);

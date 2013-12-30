@@ -17,22 +17,20 @@ using System.Windows.Browser;
 
 namespace SicoColourPicker
 {
-    public partial class MainPage : UserControl
+    public partial class MainPage
     {
-        private string culture;
-        private ObservableCollection<FrameworkElement> HueCards = new ObservableCollection<FrameworkElement>();
-        private ObservableCollection<FrameworkElement> ColorCards = new ObservableCollection<FrameworkElement>();
-        private bool isMouseCaptured;        
+        private readonly string _culture;
+        private FrameworkElement _hueSwatchCard;
+        private bool _isMouseCaptured;        
         private double _mouseHorizontalPosition;
-        private bool _isExtra = false;
-        private double _ColorZoneWidth;
-        private double _ColorZoneHeight;        
-        private ObservableCollection<ColourList> _hueSwatches = new ObservableCollection<ColourList>();        
-        private ObservableCollection<ColourList> _colours = new ObservableCollection<ColourList>();
+        private bool _isExtra;
+        private double _colorZoneWidth;
+        private double _colorZoneHeight;        
+        private readonly ObservableCollection<ColourList> _hueSwatches = new ObservableCollection<ColourList>();        
+        private readonly ObservableCollection<ColourList> _colours = new ObservableCollection<ColourList>();
         private string _hash = string.Empty;
         public event PropertyChangedEventHandler PropertyChanged;
         public List<String> InitParams = new List<string>();
-
         public string Hash { get { return _hash; } set 
         { 
             if (value != string.Empty) {
@@ -54,9 +52,9 @@ namespace SicoColourPicker
         }
         public double ColorZoneWidth { 
             get { 
-                return _ColorZoneWidth; 
+                return _colorZoneWidth; 
             } set { 
-                _ColorZoneWidth = value;
+                _colorZoneWidth = value;
                 NotifyPropertyChanged("ColorZoneWidth");
             } 
         }
@@ -64,11 +62,11 @@ namespace SicoColourPicker
         {
             get
             {
-                return _ColorZoneHeight;
+                return _colorZoneHeight;
             }
             set
             {
-                _ColorZoneHeight = value;
+                _colorZoneHeight = value;
                 NotifyPropertyChanged("ColorZoneHeight");
             }
         }
@@ -81,10 +79,11 @@ namespace SicoColourPicker
             set
             {
                 if (value == _hueSwatches) return;
+                _hueSwatches.Clear();
                 foreach (var item in value)
                 {                    
                     _hueSwatches.Add(item);
-					createHueRow(item);
+					CreateHueRow(item);
                 }                
             }
         }
@@ -97,39 +96,37 @@ namespace SicoColourPicker
             set
             {                
                 if (value == _colours) return;
+                _colours.Clear();
                 foreach (var item in value)
                 {
                     _colours.Add(item);
-                    createColorCardRow(item);                    
+                    CreateColorCardRow(item);                    
                 }                
             }
         }
-        public WebClient ColoursWC = new WebClient();
-        public WebClient ColoursDetailWC = new WebClient();
+        private readonly WebClient _coloursWc = new WebClient();
+        private readonly WebClient _coloursDetailWc = new WebClient();
         public MainPage()
         {
             InitializeComponent();
             busyIndicator.IsBusy = true;
-            ColoursWC.DownloadStringCompleted += wc_DownloadStringCompleted;
+            _coloursWc.DownloadStringCompleted += wc_DownloadStringCompleted;
             Hash = HtmlPage.Document.DocumentUri.Fragment;
-            culture = HtmlPage.Document.DocumentUri.ToString().Contains("en-ca") ? "fr-ca" : "en-ca";
+            _culture = HtmlPage.Document.DocumentUri.ToString().Contains("en-ca") ? "fr-ca" : "en-ca";
             FetchColors(getQueryString("hue"), getQueryString("mode"), getQueryString("withExtra"));            
             PaintCardZone.LayoutUpdated+=PaintCardZone_LayoutUpdated;
             ColorDetailView.BackButtonClick += CloseColourDetail;
             ColorDetailView.NextSwatchClick += ColorDetailView_NextSwatchClick;
             ColorDetailView.PreviousSwatchClick += ColorDetailView_PreviousSwatchClick;
         }
-
         void ColorDetailView_PreviousSwatchClick(object sender, EventArgs e)
         {
             
         }
-
         void ColorDetailView_NextSwatchClick(object sender, EventArgs e)
         {
             
         }
-
         string getQueryString(string key) {
             var result = string.Empty;
             if (HtmlPage.Document.QueryString.ContainsKey(key))
@@ -142,16 +139,43 @@ namespace SicoColourPicker
             if (withExtra == string.Empty) {
                 withExtra = "false";
             }
-            var p = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&withExtra={1}",culture, withExtra);
+            var p = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&withExtra={1}",_culture, withExtra);
             if (hue != string.Empty) {
-                p = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&mode={1}&hue={2}&withExtra={3}",culture, mode, hue, withExtra);
+                p = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&mode={1}&hue={2}&withExtra={3}",_culture, mode, hue, withExtra);
             }            
-            ColoursWC.DownloadStringAsync(new Uri(p));            
+            _coloursWc.DownloadStringAsync(new Uri(p));            
+        }
+        private void ColoursDetailWC_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                var webex = (WebException)e.Error;
+                var webrs = (HttpWebResponse)webex.Response;
+                var sr = new System.IO.StreamReader(webrs.GetResponseStream());
+                var str = sr.ReadToEnd();
+                throw new Exception(String.Format("{0} - {1}: {2}", ((int)Enum.Parse(typeof(HttpStatusCode), webrs.StatusCode.ToString(), true)), webrs.StatusDescription, str), e.Error);
+            }
+            Dispatcher.BeginInvoke(() =>
+            {
+                LayoutRoot.Visibility = Visibility.Collapsed;
+                ColorDetailView.Visibility = Visibility.Visible;
+                busyIndicator.IsBusy = false;
+            });
+            var item = JsonConvert.DeserializeObject<SicoColorExtended>(JsonConvert.DeserializeObject<WebResponse>(e.Result).Results.ToString());
+            ColorDetailView.SelectedColour = item;
+
+
+        }
+        private void CloseColourDetail(object sender, EventArgs e)
+        {
+            ColorDetailView.Visibility = Visibility.Collapsed;
+            LayoutRoot.Visibility = Visibility.Visible;
         }
         public void PaintCardZone_LayoutUpdated(object sender, EventArgs e)
         {
-            if (HueCards.Count > 0) {                
-                Jogger.Width = HueCards[0].ActualWidth * 6.5;                    
+            if (_hueSwatchCard!=null)
+            {
+                Jogger.Width = _hueSwatchCard.ActualWidth * 6.5;                    
             }
             
         }
@@ -175,18 +199,18 @@ namespace SicoColourPicker
             HueSwatches = results;
             Colours = results;                        
         }
-        public void setJoggerSize(FrameworkElement sample){
-            trace(sample.ActualWidth);
+        public void SetJoggerSize(FrameworkElement sample){
+            Trace(sample.ActualWidth);
         }
-        public void createColorCardRow(ColourList cl)
+        public void CreateColorCardRow(ColourList cl)
         {
-            var borderRadiusAmount = 5;
+            const int borderRadiusAmount = 5;
             //Create the container            
-            var colorCard = new Grid();
-            colorCard.Margin = new Thickness(0, 0, 15, 0);
+            var colorCard = new Grid {Margin = new Thickness(0, 0, 15, 0)};
             //create the swatches
             foreach (var swatch in cl.Colours)
             {
+                var item = swatch;
                 var shadowColor = ToColorFromHex("#494949");
                 var fontColor = new SolidColorBrush(Colors.White);
                 if (swatch.Font.ToLower() == "dark-font")
@@ -196,13 +220,12 @@ namespace SicoColourPicker
                 }
                 var rowIndex = cl.Colours.IndexOf(swatch);
                 colorCard.RowDefinitions.Add(new RowDefinition());
-                var border = new Border();                
-                border.Cursor = Cursors.Hand;
-                border.MouseLeftButtonUp += delegate { swatch_Click(swatch); };
-                border.Background = new SolidColorBrush(ToColorFromHex(swatch.Background));
+                var border = new Border {Cursor = Cursors.Hand, Background = new SolidColorBrush(ToColorFromHex(swatch.Background))};                
+                border.MouseLeftButtonUp += delegate { swatch_Click(item); };
+                
                 var cardData = new StackPanel();
-                cardData.Children.Add(new TextBlock() { Text = swatch.DisplayCode, Margin = new Thickness(5, 5, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect() { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
-                cardData.Children.Add(new TextBlock() { Text = swatch.Name, Margin = new Thickness(5, 0, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect() { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
+                cardData.Children.Add(new TextBlock { Text = swatch.DisplayCode, Margin = new Thickness(5, 5, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
+                cardData.Children.Add(new TextBlock { Text = swatch.Name, Margin = new Thickness(5, 0, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
                 var cardMargin = new Thickness(0, 0, 0, 5);
                 if (rowIndex + 1 == 1)
                 {
@@ -222,7 +245,7 @@ namespace SicoColourPicker
                 colorCard.Children.Add(border);
                 Grid.SetRow(border, rowIndex);
             }
-            ColorCardZone.ColumnDefinitions.Add(new ColumnDefinition() { });
+            ColorCardZone.ColumnDefinitions.Add(new ColumnDefinition());
             var newColumnIndex = ColorCardZone.ColumnDefinitions.Count - 1;
             ColorCardZone.Children.Add(colorCard);
             Grid.SetColumn(colorCard, newColumnIndex);
@@ -240,48 +263,18 @@ namespace SicoColourPicker
             {
                 busyIndicator.IsBusy = true;
             });*/
-            busyIndicator.IsBusy = true;
-            
-            
+            busyIndicator.IsBusy = true;                        
             var item = sender as SicoColour;
-            trace("clicked a Color: " + item.ColorCode);
-            var param = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&code={1}", culture,item.ColorCode);
-            ColoursDetailWC.DownloadStringCompleted += ColoursDetailWC_DownloadStringCompleted;
-            ColoursDetailWC.DownloadStringAsync(new Uri(param));                        
-        }
-
-
-
-
-
-        void ColoursDetailWC_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
-        {
-            if (e.Error != null)
+            if (item == null)
             {
-                var webex = (WebException)e.Error;
-                var webrs = (HttpWebResponse)webex.Response;
-                var sr = new System.IO.StreamReader(webrs.GetResponseStream());
-                var str = sr.ReadToEnd();
-                throw new Exception(String.Format("{0} - {1}: {2}", ((int)Enum.Parse(typeof(HttpStatusCode), webrs.StatusCode.ToString(), true)), webrs.StatusDescription, str), e.Error);
-            }            
-            Dispatcher.BeginInvoke(() =>
-           {               
-               LayoutRoot.Visibility = Visibility.Collapsed;
-               ColorDetailView.Visibility = Visibility.Visible;
-               busyIndicator.IsBusy = false;
-           });            
-            var item = JsonConvert.DeserializeObject<SicoColorExtended>(JsonConvert.DeserializeObject<WebResponse>(e.Result).Results.ToString());
-            ColorDetailView.SelectedColour = item;
-            
-            
+                throw new Exception("Null swatch clicked");
+            }
+            Trace("clicked a Color: " + item.ColorCode);
+            var param = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&code={1}", _culture,item.ColorCode);
+            _coloursDetailWc.DownloadStringCompleted += ColoursDetailWC_DownloadStringCompleted;
+            _coloursDetailWc.DownloadStringAsync(new Uri(param));                        
         }
-
-        void CloseColourDetail(object sender, EventArgs e)
-        {
-            ColorDetailView.Visibility = Visibility.Collapsed;
-            LayoutRoot.Visibility = Visibility.Visible;            
-        }
-		public void createHueRow(ColourList cl){
+		public void CreateHueRow(ColourList cl){
             //Create the container
             var colorCard = new Grid();
             //create the swatches
@@ -289,60 +282,64 @@ namespace SicoColourPicker
             {
                 var rowIndex = cl.Colours.IndexOf(swatch);
                 colorCard.RowDefinitions.Add(new RowDefinition());
-                var colorBlock = new Rectangle();
-                colorBlock.Fill = new SolidColorBrush(ToColorFromHex(swatch.Background));
-                colorBlock.Stroke = new SolidColorBrush(ToColorFromHex(swatch.Background));
+                var colorBlock = new Rectangle
+                {
+                    Fill = new SolidColorBrush(ToColorFromHex(swatch.Background)),
+                    Stroke = new SolidColorBrush(ToColorFromHex(swatch.Background))
+                };
                 colorCard.Children.Add(colorBlock);
                 Grid.SetRow(colorBlock, rowIndex);                                
             }            
-            PaintCardZone.ColumnDefinitions.Add(new ColumnDefinition() { });
+            PaintCardZone.ColumnDefinitions.Add(new ColumnDefinition());
             var newColumnIndex = PaintCardZone.ColumnDefinitions.Count - 1;
             PaintCardZone.Children.Add(colorCard);
-            HueCards.Add(colorCard);
+		    _hueSwatchCard = colorCard;
+
+            
             
             Grid.SetColumn(colorCard, newColumnIndex);            
 		}
         public void Handle_MouseDown(object sender, MouseEventArgs args)
         {
             var item = sender as JogDialer;
+            if (item == null)
+            {
+                throw new Exception("Null jogger");
+            }
             _mouseHorizontalPosition = args.GetPosition(null).X;
-            isMouseCaptured = true;
+            _isMouseCaptured = true;
             item.CaptureMouse();
         }
         public void Handle_MouseMove(object sender, MouseEventArgs args)
         {
-            if (isMouseCaptured)
-            {
-                var item = sender as JogDialer;
-                var parent = item.Parent as Canvas;
-                double deltaH = args.GetPosition(null).X - _mouseHorizontalPosition;
-                double newLeft = deltaH + (double)item.GetValue(Canvas.LeftProperty);                                                
-                var offset = (Jogger.ActualWidth);
-                var percentMoved = ((double)item.GetValue(Canvas.LeftProperty)) / (parent.ActualWidth - offset);
+            if (!_isMouseCaptured) return;
+            var item = sender as JogDialer;
+            if (item == null) { throw new Exception("Null jogger on mouse move");}
+            var parent = item.Parent as Canvas;
+            if (parent == null) { throw new Exception("Null jogger parent on mouse move");}
+            var deltaH = args.GetPosition(null).X - _mouseHorizontalPosition;
+            var newLeft = deltaH + (double)item.GetValue(Canvas.LeftProperty);                                                
+            var offset = (Jogger.ActualWidth);
+            var percentMoved = ((double)item.GetValue(Canvas.LeftProperty)) / (parent.ActualWidth - offset);
 
-                trace("percent moved:" + percentMoved);                
-                var maxRight = parent.ActualWidth - item.ActualWidth;
-                var colorCardsPosition = ((ColorCardZone.ActualWidth-parent.Width) * percentMoved) * -1;
-
-                // Calculate the current position of the object.                                
-                
-                //inforce left limit
-                newLeft = Math.Max(Canvas.GetLeft(parent),Math.Min(newLeft, maxRight));
-                
-                //trace(string.Format("Moved: {0}% | Jogger Left: {1} | Colour Ribbon Left: {2} | Colour Ribbon Width: {3}",percentMoved,newLeft,colorCardsPosition, ColorCardZone.ActualWidth));
-                item.SetValue(Canvas.LeftProperty, newLeft);                
-                //move the card list (reverse direction)
-                ColorCardZone.SetValue(Canvas.LeftProperty, colorCardsPosition);
-                // Update position global variables.
-                _mouseHorizontalPosition = args.GetPosition(null).X;
-            }
+            Trace("percent moved:" + percentMoved);                
+            var maxRight = parent.ActualWidth - item.ActualWidth;
+            var colorCardsPosition = ((ColorCardZone.ActualWidth-parent.Width) * percentMoved) * -1;
+            //inforce left limit
+            newLeft = Math.Max(Canvas.GetLeft(parent),Math.Min(newLeft, maxRight));
+            //trace(string.Format("Moved: {0}% | Jogger Left: {1} | Colour Ribbon Left: {2} | Colour Ribbon Width: {3}",percentMoved,newLeft,colorCardsPosition, ColorCardZone.ActualWidth));
+            item.SetValue(Canvas.LeftProperty, newLeft);                
+            //move the card list (reverse direction)
+            ColorCardZone.SetValue(Canvas.LeftProperty, colorCardsPosition);
+            // Update position global variables.
+            _mouseHorizontalPosition = args.GetPosition(null).X;
         }
         public void Handle_MouseUp(object sender, MouseEventArgs args)
         {
             var item = sender as JogDialer;
-            isMouseCaptured = false;
+            if (item == null){throw new Exception("Null jogger on mouse up");}
+            _isMouseCaptured = false;
             item.ReleaseMouseCapture();
-
             _mouseHorizontalPosition = -1;
         }        
         public void NotifyPropertyChanged(string propertyName)
@@ -352,30 +349,27 @@ namespace SicoColourPicker
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
-        public void trace(object output){
+        public void Trace(object output){
             System.Diagnostics.Debug.WriteLine(output.ToString());
         }
-
         public static Color ToColorFromHex ( string hex )
         {
             if(string.IsNullOrEmpty(hex))
             {
                 throw new ArgumentNullException("hex");
             }
-
             // remove any "#" characters
             while(hex.StartsWith("#"))
             {
                 hex = hex.Substring(1);
             }
-
-            int num = 0;
+            int num;
             // get the number out of the string 
             if(!Int32.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out num))
             {
                 throw new ArgumentException("Color not in a recognized Hex format.");
             }
-            int[] pieces = new int[4];
+            var pieces = new int[4];
             if(hex.Length > 7)
             {
                 pieces[0] = ((num >> 24) & 0x000000ff);
@@ -402,10 +396,6 @@ namespace SicoColourPicker
             }
             return Color.FromArgb((byte) pieces[0], (byte) pieces[1], (byte) pieces[2], (byte) pieces[3]);
         }
-
-        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            busyIndicator.IsBusy = false;
-        }        
+       
     }
 }

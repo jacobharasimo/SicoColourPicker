@@ -13,7 +13,7 @@ using System.Windows.Shapes;
 
 namespace SicoColourPicker
 {
-    public partial class ColourDetailView : UserControl
+    public partial class ColourDetailView
     {
         public static readonly DependencyProperty IsVisibileProperty =
            DependencyProperty.Register("IsVisibile", 
@@ -31,7 +31,6 @@ namespace SicoColourPicker
           DependencyProperty.Register("SelectedColour",
              typeof(SicoColorExtended), typeof(ColourDetailView),
              new PropertyMetadata(null));
-
         public bool IsVisibile
         {
             get { return (bool)GetValue(IsVisibileProperty); }
@@ -72,14 +71,14 @@ namespace SicoColourPicker
         {
             IsVisibile = !IsVisibile;
         }
-        private void NextSwatch_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void NextSwatch_Click(object sender, RoutedEventArgs e)
         {
             if (NextSwatchClick != null)
             {
                 NextSwatchClick(sender, e);
             }  
         }
-        private void PreviousSwatch_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void PreviousSwatch_Click(object sender, RoutedEventArgs e)
         {
             if (PreviousSwatchClick != null)
             {

@@ -1,14 +1,10 @@
-﻿using System.Collections.ObjectModel;
-
-namespace SicoColourPicker
+﻿namespace SicoColourPicker
 {
     public class WebResponse : CustomClass
     {
         private string _message;
         private bool _success;
         private object _results;
-
-
         public string Message
         {
             get

@@ -67,8 +67,8 @@
 					<Image Source="back-icon.png" HorizontalAlignment="Left" VerticalAlignment="Center" Stretch="None" Height="20" Width="20" />
 					<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Back" VerticalAlignment="Center" Foreground="#FFDA291C" Margin="3,0,0,0"/>
 				</StackPanel>
-			</Button>			
-		</Grid>
+			</Button>
+        </Grid>
 		<Grid x:Name="ColorSwatchZone" Grid.Row="1" Margin="7">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="2*"/>
@@ -157,25 +157,32 @@
                 
 			</StackPanel>
 		</Grid>
-		<Grid x:Name="CtaZone" Grid.Column="1" Grid.Row="1" Margin="7" Width="262" HorizontalAlignment="Left">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="2*"/>
-				<RowDefinition Height="2*"/>
-			</Grid.RowDefinitions>
-			<Grid x:Name="ColourHueCta" Margin="0,0,0,7" >
-				<Image Source="http://sico.dev.ecentricarts.com/getmedia/7f63a7bb-f52c-4a27-85c3-8ff310da722a/1250_ColoursHues_shutterstock_74107861_270x198px.jpg.aspx?ext=.jpg" Stretch="None"/>
-				<HyperlinkButton Background="red" Margin="0,0,0,12" VerticalAlignment="Bottom" HorizontalAlignment="Left">
-					<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Cursor="Hand">
-						<Image Source="right-arrow-icon.png" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15,0,0,0" Stretch="None"/>
-						<TextBlock Text="Get Inspired" HorizontalAlignment="Right" Margin="3,15,20,15" Foreground="White"/>
-					</StackPanel>
-				</HyperlinkButton>
-				<Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Padding="15" Margin="0,0,0,71" Background="#97000000">
-					<TextBlock TextWrapping="NoWrap" Text="Colour Hues" Foreground="White" />
-				</Border>
-			</Grid>
-			<Grid Grid.Row="1" Margin="0,7,0,0" />
-		</Grid>
+
+        <ItemsControl ItemsSource="{Binding SelectedColour.CategoryPages, ElementName=userControlColorDetail}" Grid.Column="1" Grid.Row="1" Width="262"  HorizontalAlignment="Left" x:Name="CtaZone" VerticalAlignment="Top">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel></StackPanel>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Grid x:Name="ColourCardsCta" Margin="7" >
+							<Image Source="http://sico.dev.ecentricarts.com/getmedia/7f63a7bb-f52c-4a27-85c3-8ff310da722a/1250_ColoursHues_shutterstock_74107861_270x198px.jpg.aspx?ext=.jpg" Stretch="UniformToFill" Height="185"/>
+							<HyperlinkButton Background="red" Margin="0,0,0,12" VerticalAlignment="Bottom" HorizontalAlignment="Left" NavigateUri="{Binding SelectedColour.CategoryPages[0].DocumentPath, ElementName=userControlColorDetail}">
+								<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Cursor="Hand">
+									<Image Source="right-arrow-icon.png" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15,0,0,0" Stretch="None"/>
+									<TextBlock Text="Get Inspired" HorizontalAlignment="Right" Margin="5,15,20,15" Foreground="White"  FontSize="14"/>
+								</StackPanel>
+							</HyperlinkButton>
+							<Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Padding="15" Margin="0,0,0,71" Background="#97000000">
+								<TextBlock TextWrapping="NoWrap" Text="Colour Cards" Foreground="White" FontSize="24"/>
+							</Border>
+						</Grid>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+			
+		
 		<Grid x:Name="RelatedColourZone" Grid.Row="2" Margin="7,18,7,7" >
 			<Grid.RowDefinitions>
 				<RowDefinition Height="25"/>
@@ -187,12 +194,12 @@
 				<ColumnDefinition Width="4*"/>
 				<ColumnDefinition Width="4*"/>
 			</Grid.ColumnDefinitions>
-			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Base Colour" VerticalAlignment="Top" Foreground="#FF666666" FontWeight="Bold" FontSize="11"/>
-			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Complementary" VerticalAlignment="Top" Foreground="#FF666666" Grid.Column="1" FontWeight="Bold" FontSize="11"/>
-			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Triad" VerticalAlignment="Top" Foreground="#FF666666" Grid.Column="2" FontWeight="Bold" FontSize="11"/>
-			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Shades" VerticalAlignment="Top" Foreground="#FF666666" Grid.Column="3" FontWeight="Bold" FontSize="11"/>
+			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Base Colour" VerticalAlignment="Top" Foreground="#FF666666" FontWeight="Bold" FontSize="16"/>
+			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Complementary" VerticalAlignment="Top" Foreground="#FF666666" Grid.Column="1" FontWeight="Bold" FontSize="16"/>
+			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Triad" VerticalAlignment="Top" Foreground="#FF666666" Grid.Column="2" FontWeight="Bold" FontSize="16"/>
+			<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Shades" VerticalAlignment="Top" Foreground="#FF666666" Grid.Column="3" FontWeight="Bold" FontSize="16"/>
 			<Grid x:Name="BaseColorZone" Grid.Row="1" Margin="0,0,6,0" >
-                <Rectangle Fill="LightGray" />
+                <Rectangle Fill="{Binding SelectedColour.Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.DisplayCode, ElementName=userControlColorDetail}"/>
 			</Grid>
 			<Grid x:Name="ComplementaryColorZone" Grid.Row="1" Grid.Column="1" Margin="0,0,6,0" >
 				<Grid.ColumnDefinitions>
@@ -200,10 +207,11 @@
 					<ColumnDefinition Width="2*"/>
 				</Grid.ColumnDefinitions>
 				<Grid Margin="0,0,3,0" >
-                    <Rectangle Fill="LightGray" />
+                    <Rectangle Fill="{Binding SelectedColour.Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.DisplayCode, ElementName=userControlColorDetail}"/>
 				</Grid>
 				<Grid Grid.Column="1" Margin="3,0,0,0" >
-                    <Rectangle Fill="LightGray" />
+
+                    <Rectangle Fill="{Binding SelectedColour.ComplementaryColours[0].Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.ComplementaryColours[0].DisplayCode, ElementName=userControlColorDetail}"/>
 				</Grid>
 			</Grid>
 			<Grid x:Name="TriadColorZone" Grid.Row="1" Grid.Column="2" Margin="0,0,6,0">
@@ -217,14 +225,14 @@
 						<RowDefinition Height="2*"/>
 					</Grid.RowDefinitions>
 					<Grid Margin="3,0,0,3">
-                        <Rectangle Fill="LightGray" />
+                        <Rectangle Fill="{Binding SelectedColour.TriadColours[0].Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.TriadColours[0].DisplayCode, ElementName=userControlColorDetail}"/>
 					</Grid>
 					<Grid Grid.Row="1" Margin="3,3,0,0" >
-                        <Rectangle Fill="LightGray" />
+                        <Rectangle Fill="{Binding SelectedColour.TriadColours[1].Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.TriadColours[1].DisplayCode, ElementName=userControlColorDetail}"/>
 					</Grid>
 				</Grid>
 				<Grid Margin="0,0,3,0" >
-                    <Rectangle Fill="LightGray" />
+                    <Rectangle Fill="{Binding SelectedColour.Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.DisplayCode, ElementName=userControlColorDetail}"/>
 				</Grid>
 			</Grid>
 			<Grid x:Name="ShadesColorZone" Grid.Row="1" Grid.Column="3" Margin="0" >
@@ -238,20 +246,21 @@
 						<RowDefinition Height="2*"/>
 					</Grid.RowDefinitions>
 					<Grid Margin="3,0,0,3">
-                        <Rectangle Fill="LightGray" />
+                        <Rectangle Fill="{Binding SelectedColour.ShadesColours[0].Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.ShadesColours[0].DisplayCode, ElementName=userControlColorDetail}"/>
 					</Grid>
 					<Grid Grid.Row="1" Margin="3,3,0,0" >
-                        <Rectangle Fill="LightGray" />
+                        <Rectangle Fill="{Binding SelectedColour.ShadesColours[1].Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.ShadesColours[1].DisplayCode, ElementName=userControlColorDetail}" />
 					</Grid>
 				</Grid>
 				<Grid Margin="0,0,3,0" >
-                    <Rectangle Fill="LightGray" />
+                    <Rectangle Fill="{Binding SelectedColour.Background, ElementName=userControlColorDetail, FallbackValue=LightGray}" ToolTipService.ToolTip="{Binding SelectedColour.DisplayCode, ElementName=userControlColorDetail}"/>
 				</Grid>
 			</Grid>
 		</Grid>
 		<Grid x:Name="ProductSelectionZone" Grid.Column="1" Grid.Row="2" Margin="7,18,7,7" HorizontalAlignment="Left" Width="262">
-			<StackPanel Cursor="Hand">
-				<HyperlinkButton Foreground="#FFDA291C" Margin="3,0,0,0" >
+			<StackPanel Cursor="Hand" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,25,0,0">
+                <Image Source="red-right-arrow-icon.png" Stretch="None" ></Image>
+				<HyperlinkButton Foreground="#FFDA291C" Margin="3,0,0,0" FontSize="16">
 					Select Product
 				</HyperlinkButton>				
 			</StackPanel>

@@ -162,6 +162,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Design\projectGuides.guides" />
     <None Include="packages.config" />
     <None Include="Properties\AppManifest.xml" />
   </ItemGroup>

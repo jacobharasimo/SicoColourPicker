@@ -10,31 +10,34 @@
 	 d:DesignWidth="1170"
 	 d:DesignHeight="577"  >
 	<UserControl.Resources>
-		<local:InvertedBooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter"></local:InvertedBooleanToVisibilityConverter>
-	</UserControl.Resources>
+        <local:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" True="Collapsed" False="Visible"></local:BooleanToVisibilityConverter>
+    </UserControl.Resources>
 <Grid>
-		<toolkit:BusyIndicator x:Name="busyIndicator" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsBusy="{Binding IsBusy, ElementName=userControl}">
-            <Grid x:Name="LayoutRoot" Visibility="{Binding IsBusy, Converter={StaticResource InvertedBooleanToVisibilityConverter}, ElementName=busyIndicator}">
+		<toolkit:BusyIndicator x:Name="busyIndicator" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid>
+				<Grid x:Name="LayoutRoot" Visibility="{Binding IsBusy, Converter={StaticResource InvertedBooleanToVisibilityConverter}, ElementName=busyIndicator}">
 		
-				<Grid.RowDefinitions>
-					<RowDefinition Height="124"/>
-					<RowDefinition Height="*"/>
-				</Grid.RowDefinitions>
-				<Grid x:Name="Hues">
-					<Border BorderThickness="0,0,0,24" BorderBrush="#FFD0D8DD" Width="{Binding Width, ElementName=userControl}">
-						<Canvas Width="{Binding Width, ElementName=userControl}" Margin="0">										
-							<Grid Width="{Binding Width, ElementName=userControl}" Height="100" x:Name="PaintCardZone" Margin="0"/>
-							<local:JogDialer x:Name="Jogger"  MouseLeftButtonDown="Handle_MouseDown" MouseMove="Handle_MouseMove" MouseLeftButtonUp="Handle_MouseUp" Cursor="SizeWE" Height="124"/>
-						</Canvas>
-					</Border>        
+					<Grid.RowDefinitions>
+						<RowDefinition Height="124"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+					<Grid x:Name="Hues">
+						<Border BorderThickness="0,0,0,24" BorderBrush="#FFD0D8DD" Width="{Binding Width, ElementName=userControl}">
+							<Canvas Width="{Binding Width, ElementName=userControl}" Margin="0">										
+								<Grid Width="{Binding Width, ElementName=userControl}" Height="100" x:Name="PaintCardZone" Margin="0"/>
+								<local:JogDialer x:Name="Jogger"  MouseLeftButtonDown="Handle_MouseDown" MouseMove="Handle_MouseMove" MouseLeftButtonUp="Handle_MouseUp" Cursor="SizeWE" Height="124"/>
+							</Canvas>
+						</Border>        
+					</Grid>
+					<Canvas Grid.Row="2" Margin="0,15,0,0">		
+						<Canvas.Clip>
+							<RectangleGeometry Rect="0,0,1170,1000"/>
+						</Canvas.Clip>	
+						<Grid x:Name="ColorCardZone" VerticalAlignment="Top"/>
+					</Canvas>
+		
 				</Grid>
-				<Canvas Grid.Row="2" Margin="0,15,0,0">		
-					<Canvas.Clip>
-						<RectangleGeometry Rect="0,0,1170,1000"/>
-					</Canvas.Clip>	
-					<Grid x:Name="ColorCardZone" VerticalAlignment="Top"/>
-				</Canvas>
-		
+				<local:ColourDetailView x:Name="ColorDetailView" Visibility="Collapsed" />
 			</Grid>
 		</toolkit:BusyIndicator>
 	</Grid>

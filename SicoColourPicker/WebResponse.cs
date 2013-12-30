@@ -6,7 +6,7 @@ namespace SicoColourPicker
     {
         private string _message;
         private bool _success;
-        private ObservableCollection<ColourList> _results;
+        private object _results;
 
 
         public string Message
@@ -35,7 +35,7 @@ namespace SicoColourPicker
                 NotifyPropertyChanged("Success");
             }
         }
-        public ObservableCollection<ColourList> Results
+        public object Results
         {
             get
             {

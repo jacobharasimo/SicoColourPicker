@@ -12,18 +12,9 @@ using System.Globalization;
 using System.Windows.Data;
 namespace SicoColourPicker
 {
-    public class BooleanToVisibilityConverter : IValueConverter
+    public sealed class BooleanToVisibilityConverter : BooleanConverter<Visibility>
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return (value as bool? == true) ? Visibility.Visible : Visibility.Collapsed;
-        }
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is Visibility)
-                return (Visibility)value == Visibility.Visible;
-            else
-                return false;
-        }
+        public BooleanToVisibilityConverter() :
+            base(Visibility.Visible, Visibility.Collapsed) { }
     }
 }

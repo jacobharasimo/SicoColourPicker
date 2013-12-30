@@ -12,9 +12,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>The complete Microsoft Silverlight Toolkit.  Details at http://silverlight.codeplex.com</description>
     <summary>The complete Microsoft Silverlight Toolkit.  Details at http://silverlight.codeplex.com</summary>
-    <releaseNotes />
-    <copyright />
-    <language />
     <tags>silverlight toolkit sltoolkit</tags>
     <dependencies>
       <dependency id="SilverlightToolkit-Core" version="4.2010.4" />

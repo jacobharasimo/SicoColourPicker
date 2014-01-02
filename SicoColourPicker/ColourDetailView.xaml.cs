@@ -46,6 +46,10 @@ namespace SicoColourPicker
             get { return (bool)GetValue(IsNextColorProperty); }
             set { SetValue(IsNextColorProperty, value); }
         }
+        
+        public bool HasCategoryPages {
+            get { return SelectedColour.CategoryPages[0] == null; } 
+        }
         public event EventHandler BackButtonClick;
         public event EventHandler NextSwatchClick;
         public event EventHandler PreviousSwatchClick;        
@@ -60,30 +64,32 @@ namespace SicoColourPicker
         }        
         public ColourDetailView()
         {
-            InitializeComponent();
-            Back.Click += (s, e) => {
-                if (BackButtonClick != null) {
-                    BackButtonClick(s, e);
-                }                    
-            };            
+            InitializeComponent();                  
         }
         private void HideInfo_Click(object sender, RoutedEventArgs e)
         {
             IsVisibile = !IsVisibile;
         }
+
+    
         private void NextSwatch_Click(object sender, RoutedEventArgs e)
         {
-            if (NextSwatchClick != null)
-            {
-                NextSwatchClick(sender, e);
-            }  
+            if (NextSwatchClick == null) return;
+            IsVisibile = true;
+            NextSwatchClick(sender, e);
         }
         private void PreviousSwatch_Click(object sender, RoutedEventArgs e)
         {
-            if (PreviousSwatchClick != null)
-            {
-                PreviousSwatchClick(sender, e);
-            }  
+            if (PreviousSwatchClick == null) return;
+            IsVisibile = true;
+            PreviousSwatchClick(sender, e);
+        }
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            if (BackButtonClick == null) return;
+            IsVisibile = true;
+            BackButtonClick(sender, e);
         }
     }
 }

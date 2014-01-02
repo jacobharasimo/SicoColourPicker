@@ -13,7 +13,7 @@
         <local:BooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" True="Collapsed" False="Visible"></local:BooleanToVisibilityConverter>
     </UserControl.Resources>
 <Grid>
-		<toolkit:BusyIndicator x:Name="busyIndicator" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <toolkit:BusyIndicator x:Name="busyIndicator" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BusyContent="{Binding PleaseWait, Source={StaticResource LangulageLocalStrings}}">
             <Grid>
 				<Grid x:Name="LayoutRoot" Visibility="{Binding IsBusy, Converter={StaticResource InvertedBooleanToVisibilityConverter}, ElementName=busyIndicator}">
 		

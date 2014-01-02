@@ -8,12 +8,13 @@ namespace SicoColourPicker
         private string _colorCode;
         private string _displayCode;
         private string _font;
-        private ObservableCollection<string> _hue = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> _hue = new ObservableCollection<string>();
         private int _id;
         private bool _isExtra;
         private string _name;
         private double _swatchHeight;
         private double _swatchWidth;
+
         public double SwatchHeight
         {
             get

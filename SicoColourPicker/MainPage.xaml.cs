@@ -28,7 +28,7 @@ namespace SicoColourPicker
         private double _colorZoneHeight;        
         private readonly ObservableCollection<ColourList> _hueSwatches = new ObservableCollection<ColourList>();        
         private readonly ObservableCollection<ColourList> _colours = new ObservableCollection<ColourList>();
-        private string _hash = string.Empty;
+        private string _hash = String.Empty;
         public event PropertyChangedEventHandler PropertyChanged;
         public List<String> InitParams = new List<string>();
         public string Hash { get { return _hash; } set 
@@ -106,28 +106,44 @@ namespace SicoColourPicker
         }
         private readonly WebClient _coloursWc = new WebClient();
         private readonly WebClient _coloursDetailWc = new WebClient();
+        public string ServerUrl {get { return Application.Current.Resources["ServerUrl"].ToString(); } }
+        private readonly Random _random = new Random();
+
         public MainPage()
         {
-            InitializeComponent();
-            busyIndicator.IsBusy = true;
-            _coloursWc.DownloadStringCompleted += wc_DownloadStringCompleted;
+            InitializeComponent();            
+            busyIndicator.IsBusy = true;            
             Hash = HtmlPage.Document.DocumentUri.Fragment;
-            _culture = HtmlPage.Document.DocumentUri.ToString().Contains("en-ca") ? "fr-ca" : "en-ca";
-            FetchColors(getQueryString("hue"), getQueryString("mode"), getQueryString("withExtra"));            
+            _culture = HtmlPage.Document.DocumentUri.ToString().Contains("fr-ca") ? "fr-ca" : "en-ca";
+            FetchColors(GetQueryString("hue"), GetQueryString("mode"), GetQueryString("withExtra"), GetQueryString("card"));            
             PaintCardZone.LayoutUpdated+=PaintCardZone_LayoutUpdated;
             ColorDetailView.BackButtonClick += CloseColourDetail;
             ColorDetailView.NextSwatchClick += ColorDetailView_NextSwatchClick;
             ColorDetailView.PreviousSwatchClick += ColorDetailView_PreviousSwatchClick;
         }
+
         void ColorDetailView_PreviousSwatchClick(object sender, EventArgs e)
         {
-            
+            var colourCode = ColorDetailView.SelectedColour.PrevColorCode;
+            if (String.IsNullOrEmpty(colourCode)) return;
+            busyIndicator.IsBusy = true;
+            Trace("previous Color: " + colourCode);
+            var param = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&code={1}&Unused={2}", _culture, colourCode, _random.Next().ToString());
+            _coloursDetailWc.DownloadStringCompleted += ColoursDetailWC_DownloadStringCompleted;
+            _coloursDetailWc.DownloadStringAsync(new Uri(param, UriKind.RelativeOrAbsolute));
         }
         void ColorDetailView_NextSwatchClick(object sender, EventArgs e)
         {
+            var colourCode = ColorDetailView.SelectedColour.NextColorCode;
+            if (String.IsNullOrEmpty(colourCode)) return;
+            busyIndicator.IsBusy = true;
+            Trace("next Color: " + colourCode);
+            var param = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&code={1}&Unused={2}", _culture, colourCode, _random.Next().ToString());
+            _coloursDetailWc.DownloadStringCompleted += ColoursDetailWC_DownloadStringCompleted;
+            _coloursDetailWc.DownloadStringAsync(new Uri(param, UriKind.RelativeOrAbsolute));
             
         }
-        string getQueryString(string key) {
+        static string GetQueryString(string key) {
             var result = string.Empty;
             if (HtmlPage.Document.QueryString.ContainsKey(key))
             {
@@ -135,15 +151,28 @@ namespace SicoColourPicker
             }
             return result;
         }
-        private void FetchColors(string hue, string mode, string withExtra) {
+        private void FetchColors(string hue, string mode, string withExtra, string card)
+        {
+            string p;
             if (withExtra == string.Empty) {
                 withExtra = "false";
             }
-            var p = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&withExtra={1}",_culture, withExtra);
+            if (mode != "wood")
+            {
+                _coloursWc.DownloadStringCompleted += wc_DownloadColorStringCompleted;
+                p = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&withExtra={1}&Unused={2}", _culture,
+                    withExtra, _random.Next());
+            }
+            else
+            {
+                _coloursWc.DownloadStringCompleted += wc_DownloadWoodStringCompleted;
+                p = string.Format(ServerUrl + "/SicoApi/SicoWoodstains/?Culture={0}&card={1}&Unused={2}", _culture, card, _random.Next());
+            }
+
             if (hue != string.Empty) {
-                p = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&mode={1}&hue={2}&withExtra={3}",_culture, mode, hue, withExtra);
+                p = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&hue={1}&withExtra={2}&Unused={3}", _culture, hue, withExtra, _random.Next());                
             }            
-            _coloursWc.DownloadStringAsync(new Uri(p));            
+            _coloursWc.DownloadStringAsync(new Uri(p,UriKind.RelativeOrAbsolute));            
         }
         private void ColoursDetailWC_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
@@ -170,6 +199,7 @@ namespace SicoColourPicker
         {
             ColorDetailView.Visibility = Visibility.Collapsed;
             LayoutRoot.Visibility = Visibility.Visible;
+            ColorDetailView.SelectedColour = null;
         }
         public void PaintCardZone_LayoutUpdated(object sender, EventArgs e)
         {
@@ -179,7 +209,29 @@ namespace SicoColourPicker
             }
             
         }
-        public void wc_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        public void wc_DownloadWoodStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                var webex = (WebException)e.Error;
+                var webrs = (HttpWebResponse)webex.Response;
+                var sr = new System.IO.StreamReader(webrs.GetResponseStream());
+                var str = sr.ReadToEnd();
+                throw new Exception(String.Format("{0} - {1}: {2}", ((int)Enum.Parse(typeof(HttpStatusCode), webrs.StatusCode.ToString(), true)), webrs.StatusDescription, str), e.Error);
+            }
+            ColorCardZone.Height = (68 + 5) * 6;
+            if (IsExtra)
+            {
+                ColorCardZone.Height = (68 + 5) * 8;
+            }
+            var results = GetResults<WoodList>(e.Result);
+            var conversion = WoodList.ToColourList(results);
+            var count = results.Count;
+            ColorCardZone.Width = (count) * (166 + 15);
+            HueSwatches = conversion;
+            Colours = conversion;
+        }
+        public void wc_DownloadColorStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
             if (e.Error != null) {
                 var webex = (WebException)e.Error;
@@ -192,15 +244,15 @@ namespace SicoColourPicker
             if (IsExtra) {
                 ColorCardZone.Height = (68+5)*8;
             }
-            var results = JsonConvert.DeserializeObject<ObservableCollection<ColourList>>(JsonConvert.DeserializeObject<WebResponse>(e.Result).Results.ToString());
+            var results = GetResults<ColourList>(e.Result);
             var count = results.Count;
             ColorCardZone.Width = (count) * (166 + 15);
-
             HueSwatches = results;
             Colours = results;                        
-        }
-        public void SetJoggerSize(FrameworkElement sample){
-            Trace(sample.ActualWidth);
+        }       
+        private static ObservableCollection<T> GetResults<T>(string result)
+        {
+            return JsonConvert.DeserializeObject<ObservableCollection<T>>(JsonConvert.DeserializeObject<WebResponse>(result).Results.ToString());
         }
         public void CreateColorCardRow(ColourList cl)
         {
@@ -258,11 +310,7 @@ namespace SicoColourPicker
             }
         }
         public void swatch_Click(object sender)
-        {
-            /*Dispatcher.BeginInvoke(() =>
-            {
-                busyIndicator.IsBusy = true;
-            });*/
+        {           
             busyIndicator.IsBusy = true;                        
             var item = sender as SicoColour;
             if (item == null)
@@ -270,9 +318,9 @@ namespace SicoColourPicker
                 throw new Exception("Null swatch clicked");
             }
             Trace("clicked a Color: " + item.ColorCode);
-            var param = string.Format("http://sico.dev.ecentricarts.com/SicoApi/SicoColours/?Culture={0}&code={1}", _culture,item.ColorCode);
+            var param = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&code={1}&Unused={2}", _culture, item.ColorCode, _random.Next().ToString());
             _coloursDetailWc.DownloadStringCompleted += ColoursDetailWC_DownloadStringCompleted;
-            _coloursDetailWc.DownloadStringAsync(new Uri(param));                        
+            _coloursDetailWc.DownloadStringAsync(new Uri(param, UriKind.RelativeOrAbsolute));                        
         }
 		public void CreateHueRow(ColourList cl){
             //Create the container
@@ -395,7 +443,6 @@ namespace SicoColourPicker
                 pieces[3] += pieces[3] * 16;
             }
             return Color.FromArgb((byte) pieces[0], (byte) pieces[1], (byte) pieces[2], (byte) pieces[3]);
-        }
-       
+        }       
     }
 }

@@ -6,8 +6,8 @@ namespace SicoColourPicker
     {
         private int _id;
         private bool _isExtra;
-        private ObservableCollection<SicoColour> _colours;
-        private ObservableCollection<string> _hue;
+        private ObservableCollection<SicoColour> _colours = new ObservableCollection<SicoColour>();
+        private ObservableCollection<string> _hue = new ObservableCollection<string>();
         
         public int Id
         {

@@ -191,6 +191,14 @@
       <LastGenOutput>LocalStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Semi-transparent-wood-texture.png" />
+    <Resource Include="solid-wood-texture.png" />
+    <Resource Include="Translucent-wood-texture.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Protector-wood-texture.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -9,6 +9,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Newtonsoft.Json;
 using System.ComponentModel;
@@ -19,6 +20,7 @@ namespace SicoColourPicker
 {
     public partial class MainPage
     {
+        private bool isWood;
         private readonly string _culture;
         private FrameworkElement _hueSwatchCard;
         private bool _isMouseCaptured;        
@@ -100,18 +102,25 @@ namespace SicoColourPicker
                 foreach (var item in value)
                 {
                     _colours.Add(item);
-                    CreateColorCardRow(item);                    
+                    if (isWood){
+                        CreateWoodCardRow(item);                    
+                    }
+                    else
+                    {
+                        CreateColorCardRow(item);                    
+                    }
+                    
                 }                
             }
         }
         private readonly WebClient _coloursWc = new WebClient();
         private readonly WebClient _coloursDetailWc = new WebClient();
-        public string ServerUrl {get { return Application.Current.Resources["ServerUrl"].ToString(); } }
+        public string ServerUrl {get { return App.Current.Resources["ServerUrl"].ToString(); } }
         private readonly Random _random = new Random();
-
         public MainPage()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            isWood = GetQueryString("mode") == "wood";
             busyIndicator.IsBusy = true;            
             Hash = HtmlPage.Document.DocumentUri.Fragment;
             _culture = HtmlPage.Document.DocumentUri.ToString().Contains("fr-ca") ? "fr-ca" : "en-ca";
@@ -121,7 +130,6 @@ namespace SicoColourPicker
             ColorDetailView.NextSwatchClick += ColorDetailView_NextSwatchClick;
             ColorDetailView.PreviousSwatchClick += ColorDetailView_PreviousSwatchClick;
         }
-
         void ColorDetailView_PreviousSwatchClick(object sender, EventArgs e)
         {
             var colourCode = ColorDetailView.SelectedColour.PrevColorCode;
@@ -168,7 +176,6 @@ namespace SicoColourPicker
                 _coloursWc.DownloadStringCompleted += wc_DownloadWoodStringCompleted;
                 p = string.Format(ServerUrl + "/SicoApi/SicoWoodstains/?Culture={0}&card={1}&Unused={2}", _culture, card, _random.Next());
             }
-
             if (hue != string.Empty) {
                 p = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&hue={1}&withExtra={2}&Unused={3}", _culture, hue, withExtra, _random.Next());                
             }            
@@ -254,11 +261,18 @@ namespace SicoColourPicker
         {
             return JsonConvert.DeserializeObject<ObservableCollection<T>>(JsonConvert.DeserializeObject<WebResponse>(result).Results.ToString());
         }
-        public void CreateColorCardRow(ColourList cl)
+        public void CreateWoodCardRow(ColourList cl)
         {
+            var card = GetQueryString("card");
+
+            var woodtextureBackground = new ImageBrush();
+            woodtextureBackground.Stretch = Stretch.Fill;
+            woodtextureBackground.ImageSource = (ImageSource)new ImageSourceConverter().ConvertFromString(card+"-wood-texture.png");
+
             const int borderRadiusAmount = 5;
+            var rad = new CornerRadius(borderRadiusAmount);
             //Create the container            
-            var colorCard = new Grid {Margin = new Thickness(0, 0, 15, 0)};
+            var colorCard = new Grid { Margin = new Thickness(0, 0, 15, 0) };
             //create the swatches
             foreach (var swatch in cl.Colours)
             {
@@ -272,9 +286,54 @@ namespace SicoColourPicker
                 }
                 var rowIndex = cl.Colours.IndexOf(swatch);
                 colorCard.RowDefinitions.Add(new RowDefinition());
-                var border = new Border {Cursor = Cursors.Hand, Background = new SolidColorBrush(ToColorFromHex(swatch.Background))};                
+                var border = new Border { Cursor = Cursors.Hand, Background = new SolidColorBrush(ToColorFromHex(swatch.Background)), CornerRadius = rad };
                 border.MouseLeftButtonUp += delegate { swatch_Click(item); };
-                
+                var inner = new Border {CornerRadius = rad, Background = woodtextureBackground};
+
+                var cardData = new StackPanel();
+                cardData.Children.Add(new TextBlock { Text = swatch.DisplayCode, Margin = new Thickness(15, 15, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
+                cardData.Children.Add(new TextBlock { Text = swatch.Name, Margin = new Thickness(15, 0, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
+                var cardMargin = new Thickness(0, 0, 0, 5);
+                inner.Child = cardData;
+                border.Child = inner;
+                inner.Margin = cardMargin;
+                colorCard.Children.Add(border);
+                Grid.SetRow(border, rowIndex);
+            }
+            ColorCardZone.ColumnDefinitions.Add(new ColumnDefinition());
+            var newColumnIndex = ColorCardZone.ColumnDefinitions.Count - 1;
+            ColorCardZone.Children.Add(colorCard);
+            Grid.SetColumn(colorCard, newColumnIndex);
+            //When the last card is inserted dispatch a timer to update the display
+            if (Colours.IndexOf(cl) == Colours.Count - 1)
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    busyIndicator.IsBusy = false;
+                });
+            }
+        }
+        public void CreateColorCardRow(ColourList cl)
+        {            
+            const int borderRadiusAmount = 5;
+            //Create the container            
+            var colorCard = new Grid { Margin = new Thickness(0, 0, 15, 0) };
+            //create the swatches
+            foreach (var swatch in cl.Colours)
+            {
+                var item = swatch;
+                var shadowColor = ToColorFromHex("#494949");
+                var fontColor = new SolidColorBrush(Colors.White);
+                if (swatch.Font.ToLower() == "dark-font")
+                {
+                    shadowColor = ToColorFromHex("#ffffff");
+                    fontColor = new SolidColorBrush(ToColorFromHex("#494949"));
+                }
+                var rowIndex = cl.Colours.IndexOf(swatch);
+                colorCard.RowDefinitions.Add(new RowDefinition());
+                var border = new Border { Cursor = Cursors.Hand, Background = new SolidColorBrush(ToColorFromHex(swatch.Background)) };
+                border.MouseLeftButtonUp += delegate { swatch_Click(item); };
+
                 var cardData = new StackPanel();
                 cardData.Children.Add(new TextBlock { Text = swatch.DisplayCode, Margin = new Thickness(5, 5, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
                 cardData.Children.Add(new TextBlock { Text = swatch.Name, Margin = new Thickness(5, 0, 0, 0), Foreground = fontColor, Effect = new DropShadowEffect { BlurRadius = 2, ShadowDepth = 1, Color = shadowColor } });
@@ -302,7 +361,8 @@ namespace SicoColourPicker
             ColorCardZone.Children.Add(colorCard);
             Grid.SetColumn(colorCard, newColumnIndex);
             //When the last card is inserted dispatch a timer to update the display
-            if (Colours.IndexOf(cl) == Colours.Count - 1) {
+            if (Colours.IndexOf(cl) == Colours.Count - 1)
+            {
                 Dispatcher.BeginInvoke(() =>
                 {
                     busyIndicator.IsBusy = false;

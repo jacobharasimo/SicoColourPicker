@@ -286,8 +286,7 @@ namespace SicoColourPicker
                 }
                 var rowIndex = cl.Colours.IndexOf(swatch);
                 colorCard.RowDefinitions.Add(new RowDefinition());
-                var border = new Border { Cursor = Cursors.Hand, Background = new SolidColorBrush(ToColorFromHex(swatch.Background)), CornerRadius = rad };
-                border.MouseLeftButtonUp += delegate { swatch_Click(item); };
+                var border = new Border { Background = new SolidColorBrush(ToColorFromHex(swatch.Background)), CornerRadius = rad };                
                 var inner = new Border {CornerRadius = rad, Background = woodtextureBackground};
 
                 var cardData = new StackPanel();

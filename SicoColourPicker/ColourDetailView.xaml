@@ -6,7 +6,7 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Name="userControlColorDetail" x:Class="SicoColourPicker.ColourDetailView"
 	xmlns:local="clr-namespace:SicoColourPicker"
     mc:Ignorable="d"
-    d:DesignHeight="577" d:DesignWidth="1026" Background="Black">	
+    d:DesignHeight="577" d:DesignWidth="1026">	
 	<UserControl.Resources>
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" True="Collapsed" False="Visible"></local:BooleanToVisibilityConverter>
         <local:BooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter" True="Visible" False="Collapsed"></local:BooleanToVisibilityConverter>
@@ -52,7 +52,7 @@
         </Style>
     </UserControl.Resources>
     
-	<Grid x:Name="LayoutRoot" Background="White">
+	<Grid x:Name="LayoutRoot" Background="Transparent">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="2*"/>
 			<ColumnDefinition Width="1*"/>

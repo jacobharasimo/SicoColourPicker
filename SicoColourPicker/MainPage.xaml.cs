@@ -166,7 +166,7 @@ namespace SicoColourPicker
                 withExtra = "false";
             }
             if (mode != "wood")
-            {
+            {                
                 _coloursWc.DownloadStringCompleted += wc_DownloadColorStringCompleted;
                 p = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&withExtra={1}&Unused={2}", _culture,
                     withExtra, _random.Next());
@@ -179,7 +179,14 @@ namespace SicoColourPicker
             if (hue != string.Empty) {
                 p = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&hue={1}&withExtra={2}&Unused={3}", _culture, hue, withExtra, _random.Next());                
             }            
-            _coloursWc.DownloadStringAsync(new Uri(p,UriKind.RelativeOrAbsolute));            
+            _coloursWc.DownloadStringAsync(new Uri(p,UriKind.RelativeOrAbsolute));
+            if (!string.IsNullOrEmpty(Hash))
+            {
+                var colourCode = Hash;
+                var param = string.Format(ServerUrl + "/SicoApi/SicoColours/?Culture={0}&code={1}&Unused={2}", _culture, colourCode, _random.Next().ToString());
+                _coloursDetailWc.DownloadStringCompleted += ColoursDetailWC_DownloadStringCompleted;
+                _coloursDetailWc.DownloadStringAsync(new Uri(param, UriKind.RelativeOrAbsolute));
+            }
         }
         private void ColoursDetailWC_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
